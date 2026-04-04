@@ -87,3 +87,99 @@ li a:hover {
   text-decoration: underline;
 }
 
+/* Welcome Section Styles */
+.welcome-section {
+  text-align: center;
+  margin: 30px 0;
+}
+
+.welcome-text {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.95));
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.welcome-text:hover {
+  box-shadow: 0 12px 30px rgba(235, 151, 94, 0.3);
+}
+
+.emoji {
+  font-size: 60px;
+  display: inline-block;
+  animation: wave 0.6s ease-in-out infinite;
+  margin-right: 10px;
+}
+
+@keyframes wave {
+  0% { transform: rotate(0deg); }
+  50% { transform: rotate(20deg); }
+  100% { transform: rotate(0deg); }
+}
+
+.welcome-text h2 {
+  color: #eb975e;
+  font-size: 32px;
+  margin: 15px 0;
+  font-family: Georgia, 'Times New Roman', Times, serif;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.welcome-message {
+  font-size: 20px;
+  color: #333;
+  margin: 20px 0;
+  min-height: 30px;
+  transition: all 0.5s ease;
+}
+
+.magic-button {
+  background: linear-gradient(135deg, #eb975e, #d68243);
+  color: white;
+  border: none;
+  padding: 15px 40px;
+  font-size: 18px;
+  border-radius: 50px;
+  cursor: pointer;
+  font-weight: bold;
+  box-shadow: 0 4px 15px rgba(235, 151, 94, 0.4);
+  transition: all 0.3s ease;
+  margin-top: 20px;
+}
+
+.magic-button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(235, 151, 94, 0.6);
+}
+
+.magic-button:active {
+  transform: scale(0.95);
+}
+
+.magic-button.bounce {
+  animation: bounce 0.6s ease;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-15px);
+  }
+}
+
+/* Confetti Effect */
+.confetti {
+  position: absolute;
+  font-size: 24px;
+  animation: fall 1s ease-out forwards;
+}
+
+@keyframes fall {
+  to {
+    transform: translateY(300px) rotateZ(360deg);
+    opacity: 0;
+  }
+}
