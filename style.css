@@ -10,7 +10,7 @@ h1 {
 }
 
 body {
-  background-color: bisque;
+  background: linear-gradient(135deg, #faf7eb 0%, #eb975e 100%);
 }
 
 p {
