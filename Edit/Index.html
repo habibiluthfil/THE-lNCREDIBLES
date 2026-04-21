@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bicazz - The Incredibles Financial Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            --bg-top-light: #FAF7EB;
+            --bg-bottom-light: #EB975E;
+            --bg-top-dark: #AB4F41;
+            --bg-bottom-dark: #5D1F1E;
+            --soft-rounded: 2rem;
+        }
+
+        body {
+            transition: background 0.5s ease, color 0.3s ease;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        .theme-light {
+            background: linear-gradient(to bottom, var(--bg-top-light), var(--bg-bottom-light));
+            color: #444;
+        }
+
+        .theme-dark {
+            background: linear-gradient(to bottom, var(--bg-top-dark), var(--bg-bottom-dark));
+            color: #fff;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: var(--soft-rounded);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .theme-dark .glass-card {
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Futuristic & Glowing Buttons */
+        .btn-primary {
+            background: linear-gradient(135deg, #f87171, #ef4444);
+            color: white;
+            border-radius: 1.5rem;
+            padding: 0.75rem 1.5rem;
+            font-weight: bold;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.6);
+        }
+
+        /* Swipe Card Concept */
+        .swipe-viewport {
+            overflow: hidden;
+            width: 100%;
+            border-radius: var(--soft-rounded);
+        }
+
+        .swipe-track {
+            display: flex;
+            width: 300%; /* 3 sections */
+            transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .swipe-item {
+            width: 33.333%;
+            padding: 1rem;
+            flex-shrink: 0;
+        }
+
+        /* Modern Tabs */
+        .futuristic-tab {
+            position: relative;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2rem;
+            padding: 1rem 2rem;
+            font-weight: bold;
+            transition: all 0.4s ease;
+            cursor: pointer;
+            overflow: hidden;
+            color: inherit;
+            border: 1px solid transparent;
+        }
+
+        .futuristic-tab.active {
+            background: rgba(255, 255, 255, 0.9);
+            color: #ef4444;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+        }
+
+        .theme-dark .futuristic-tab.active {
+            background: #2a0a0a;
+            color: #ff8a8a;
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
+            border: 1px solid rgba(239, 68, 68, 0.8);
+        }
+
+        .type-toggle {
+            background: rgba(0, 0, 0, 0.1);
+            padding: 0.5rem;
+            border-radius: 2rem;
+            display: inline-flex;
+            gap: 0.5rem;
+        }
+
+        .type-btn {
+            padding: 0.5rem 1.5rem;
+            border-radius: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .type-btn.active {
+            background: linear-gradient(135deg, #f87171, #ef4444);
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.5);
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hidden-section { display: none; }
+
+        /* Official Logo Styling */
+        .official-logo {
+            background: linear-gradient(135deg, #ff0000, #ff8c00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-family: 'Arial Black', Impact, sans-serif;
+            font-style: italic;
+            filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.2));
+        }
+
+        .logo-badge {
+            background: linear-gradient(135deg, #ff0000, #990000);
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+        }
+
+        /* Custom Scrollbar */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(239, 68, 68, 0.5);
+            border-radius: 10px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(239, 68, 68, 0.8);
+        }
+    </style>
+</head>
+<body class="theme-light" id="app-body">
+
+    <!-- Navigation Bar -->
+    <nav class="sticky top-0 z-50 p-4">
+        <div class="max-w-7xl mx-auto glass-card px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <img src="assets/Bicazz-Logo.jpeg" alt="Logo Bicazz" class="w-12 h-12 rounded-full object-cover">
+                <span class="text-2xl font-black tracking-tight official-logo">THE INCREDIBLES</span>
+            </div>
+            <div class="flex items-center gap-4 lg:gap-6 font-semibold text-sm lg:text-base">
+                <span class="cursor-pointer hover:text-red-600 transition" onclick="showMainSection('home')">Home</span>
+                <span class="cursor-pointer hover:text-red-600 transition" onclick="showMainSection('deskripsi')">Deskripsi Produk</span>
+                <span class="cursor-pointer hover:text-red-600 transition" onclick="showMainSection('design')">Dokumentasi</span>
+                <span class="bg-gradient-to-r from-red-500 to-orange-500 text-white px-5 py-2 rounded-2xl shadow-lg cursor-pointer hover:scale-105 transition" onclick="showMainSection('product')">Product</span>
+                <button onclick="toggleTheme()" class="p-2 rounded-full hover:bg-black/10 transition ml-2">
+                    <svg id="theme-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto p-4 flex-grow w-full overflow-hidden">
+        
+        <!-- HOME PAGE (Logo & Canva) -->
+        <section id="home-section" class="fade-in space-y-12 py-10">
+            <div class="text-center space-y-6">
+                <!-- Logo & Explanation -->
+                <div class="flex flex-col items-center justify-center space-y-4 mb-10">
+                    <img src="assets/Bicazz-Logo.jpeg" alt="Logo Bicazz" class="w-40 h-40 rounded-full object-cover border-4 border-yellow-400 shadow-[0_0_30px_rgba(255,0,0,0.6)]">
+                    <h1 class="text-4xl font-black tracking-widest uppercase mt-4">Bicazz</h1>
+                    <p class="text-lg opacity-80">The Incredibles Financial Tracker</p>
+
+                    <div class="max-w-4xl mx-auto glass-card p-6 text-left mt-6 relative overflow-hidden">
+                        <div class="absolute -right-10 -top-10 w-32 h-32 bg-red-500/20 rounded-full blur-2xl"></div>
+                        <h3 class="text-xl font-bold mb-2 flex items-center gap-2">
+                            Makna Logo Bicazz
+                        </h3>
+                        <p class="opacity-90 leading-relaxed text-sm">
+                            Logo <strong>Bicazz</strong> merepresentasikan identitas perusahaan sebagai platform keuangan yang modern, inovatif, dan terpercaya. Inisial "BZ" menegaskan nama Bicazz secara kuat dan mudah dikenali, sekaligus mencerminkan profesionalisme. Warna oranye melambangkan semangat dan kreativitas, sedangkan coklat kemerahan menunjukkan stabilitas dan kepercayaan dalam pengelolaan keuangan. Elemen bintang emas melambangkan harapan dan pencapaian, menggambarkan peran Bicazz dalam membantu pengguna meraih tujuan finansial. Tampilan gradasi memberikan kesan futuristik dan berbasis teknologi, sejalan dengan konsep aplikasi digital. Sementara itu, tulisan "ESTD 2026" mencerminkan awal berdirinya sebagai simbol komitmen untuk terus berkembang.Logo Bicazz merepresentasikan identitas perusahaan sebagai platform keuangan yang modern, inovatif, dan terpercaya. Inisial "BZ" menegaskan nama Bicazz secara kuat dan mudah dikenali, sekaligus mencerminkan profesionalisme. Warna oranye melambangkan semangat dan kreativitas, sedangkan coklat kemerahan menunjukkan stabilitas dan kepercayaan dalam pengelolaan keuangan. Elemen bintang emas melambangkan harapan dan pencapaian, menggambarkan peran Bicazz dalam membantu pengguna meraih tujuan finansial. Tampilan gradasi memberikan kesan futuristik dan berbasis teknologi, sejalan dengan konsep aplikasi digital. Sementara itu, tulisan "ESTD 2026" mencerminkan awal berdirinya sebagai simbol komitmen untuk terus berkembang.
+                        </p>
+                    </div>
+                </div>
+
+                <hr class="border-white/20 my-10">
+
+                <!-- Canva Embed (Moved from Design Page) -->
+                <div>
+                    <h2 class="text-4xl font-black mb-4 uppercase italic">The Incredibels Team</h2>
+                    <p class="mb-8 opacity-80">Lihatlah Team incredibels kami di canva ini</p>
+                    <div class="relative w-full max-w-5xl mx-auto overflow-hidden pt-[56.25%] rounded-3xl shadow-2xl mb-8 border-4 border-white/30">
+                        <iframe class="absolute top-0 left-0 w-full h-full" src="https://www.canva.com/design/DAHCHi8XlSo/CP4UE-iXJJZKXCnEhSPtMw/view?embed" allowfullscreen></iframe>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- DESKRIPSI PRODUK PAGE (Moved from old Home Page) -->
+        <section id="deskripsi-section" class="hidden-section fade-in space-y-12 py-10">
+            <div class="text-center space-y-4">
+                <h2 class="text-5xl font-black italic uppercase text-red-600 drop-shadow-lg">Tentang Bicazz</h2>
+                <p class="text-xl max-w-4xl mx-auto leading-relaxed font-medium opacity-90">
+                    Bicazz adalah aplikasi yang berkaitan dengan keuangan. Aplikasi ini dapat membantu pengguna dalam alur keluar masuknya kas (uang) pengguna dengan fitur pencatatan, target tabungan dan split bill. 
+                </p>
+                <p class="text-lg max-w-4xl mx-auto opacity-80 italic glass-card p-6">
+                    "Di tengah meningkatnya gaya konsumsi dan gaya hidup digital, banyak orang — terutama generasi muda mengalami kesulitan mengatur keuangan. Bicazz hadir sebagai penolong setia Anda."
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+                <div class="glass-card p-8 border-l-8 border-red-500 hover:scale-105 transition-transform duration-300">
+                    <h2 class="text-2xl font-bold mb-4 flex items-center gap-3">❓ Kenapa Bicazz dibuat?</h2>
+                    <ul class="space-y-4 text-lg">
+                        <li class="flex items-center gap-3">🔴 Banyak pelajar tidak mencatat keuangan secara rutin</li>
+                        <li class="flex items-center gap-3">🔴 Sulit menyisihkan uang untuk menabung</li>
+                        <li class="flex items-center gap-3">🔴 Sering bingung menghitung rincian saat makan bersama</li>
+                    </ul>
+                </div>
+                <div class="glass-card p-8 border-l-8 border-yellow-500 hover:scale-105 transition-transform duration-300">
+                    <h2 class="text-2xl font-bold mb-4 flex items-center gap-3">⭐ Kelebihan Kami</h2>
+                    <ul class="space-y-4 text-lg">
+                        <li class="flex items-center gap-3">🟢 Antarmuka yang intuitif dan mudah digunakan</li>
+                        <li class="flex items-center gap-3">🟢 Semua fitur finansial dalam satu aplikasi praktis</li>
+                        <li class="flex items-center gap-3">🟢 Visualisasi data dengan grafik yang interaktif</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- DESIGN / DOKUMENTASI PAGE (New Content) -->
+        <section id="design-section" class="hidden-section fade-in py-10">
+            <div class="max-w-5xl mx-auto space-y-10">
+                <div class="text-center">
+                    <h2 class="text-4xl font-black mb-4 uppercase italic">Dokumentasi Proses</h2>
+                    <p class="opacity-80 text-lg">Perjalanan Kelompok THE-lNCREDIBLES dalam membangun Bicazz dari nol.</p>
+                </div>
+
+                <div class="relative border-l-4 border-red-500 pl-8 space-y-12 ml-4">
+                    <!-- Timeline Item 1 -->
+                    <div class="relative">
+                        <div class="absolute -left-[42px] top-1 w-6 h-6 bg-yellow-400 rounded-full border-4 border-red-600 shadow-[0_0_10px_red]"></div>
+                        <h3 class="text-2xl font-bold mb-2">1. Tahap Ideasi & Brainstorming</h3>
+                        <div class="glass-card p-6">
+                            <p class="opacity-80">Kami menganalisis masalah umum mahasiswa: gaya hidup konsumtif dan kesulitan menabung. Dari sini, tercetus ide "Bicazz" (Biaya & Kas), terinspirasi dari kebutuhan akan "pahlawan super" keuangan (The Incredibles).</p>
+                        </div>
+                    </div>
+                    <!-- Timeline Item 2 -->
+                    <div class="relative">
+                        <div class="absolute -left-[42px] top-1 w-6 h-6 bg-yellow-400 rounded-full border-4 border-red-600 shadow-[0_0_10px_red]"></div>
+                        <h3 class="text-2xl font-bold mb-2">2. Desain UI/UX (Prototyping)</h3>
+                        <div class="glass-card p-6">
+                            <p class="opacity-80">Membuat wireframe dan desain awal menggunakan Canva. Memilih palet warna khas Incredibles (Merah, Oranye, Kuning, Hitam) dan gaya *soft rounded* agar aplikasi terasa ramah dan tidak kaku.</p>
+                        </div>
+                    </div>
+                    <!-- Timeline Item 3 -->
+                    <div class="relative">
+                        <div class="absolute -left-[42px] top-1 w-6 h-6 bg-yellow-400 rounded-full border-4 border-red-600 shadow-[0_0_10px_red]"></div>
+                        <h3 class="text-2xl font-bold mb-2">3. Pengembangan (Coding)</h3>
+                        <div class="glass-card p-6">
+                            <p class="opacity-80">Mengimplementasikan desain ke dalam kode menggunakan HTML, CSS (Tailwind CSS untuk *styling* cepat dan responsif), serta JavaScript untuk logika aplikasi (Kalkulasi Kas, Target Tabungan, Split Bill).</p>
+                        </div>
+                    </div>
+                    <!-- Timeline Item 4 -->
+                    <div class="relative">
+                        <div class="absolute -left-[42px] top-1 w-6 h-6 bg-yellow-400 rounded-full border-4 border-red-600 shadow-[0_0_10px_red]"></div>
+                        <h3 class="text-2xl font-bold mb-2">4. Pengujian & Penyempurnaan (Testing)</h3>
+                        <div class="glass-card p-6">
+                            <p class="opacity-80">Melakukan *bug fixing*, memastikan grafik dari `Chart.js` merender dengan benar, dan merombak UI produk menjadi sistem *swipe card* yang modern dan futuristik.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PRODUCT PAGE (Redesigned Swipe Card Concept) -->
+        <section id="product-section" class="hidden-section fade-in space-y-8 py-6">
+            
+            <!-- Futuristic Tab Navigation -->
+            <div class="flex justify-center mb-6">
+                <div class="glass-card p-2 flex gap-2 rounded-full backdrop-blur-xl bg-white/10 shadow-[0_0_20px_rgba(0,0,0,0.1)]">
+                    <button class="futuristic-tab active" id="tab-0" onclick="swipeTo(0)">
+                        <span class="mr-2">📒</span> Kas
+                    </button>
+                    <button class="futuristic-tab" id="tab-1" onclick="swipeTo(1)">
+                        <span class="mr-2">🎯</span> Target
+                    </button>
+                    <button class="futuristic-tab" id="tab-2" onclick="swipeTo(2)">
+                        <span class="mr-2">⚖️</span> Split
+                    </button>
+                </div>
+            </div>
+
+            <!-- Horizontal Swipe Viewport -->
+            <div class="swipe-viewport glass-card border-none bg-white/5 shadow-[0_15px_50px_rgba(0,0,0,0.15)] relative overflow-hidden">
+                <!-- Decorative Glow Backgrounds -->
+                <div class="absolute -top-32 -left-32 w-64 h-64 bg-red-500/20 rounded-full blur-[80px] pointer-events-none"></div>
+                <div class="absolute -bottom-32 -right-32 w-64 h-64 bg-yellow-500/20 rounded-full blur-[80px] pointer-events-none"></div>
+
+                <div class="swipe-track" id="product-track">
+                    
+                    <!-- PANEL 1: PENCATATAN KAS -->
+                    <div class="swipe-item relative z-10">
+                        <div class="text-center mb-8">
+                            <h2 class="text-3xl font-black italic text-red-500 drop-shadow-md">Pencatatan Kas</h2>
+                            <p class="opacity-70 text-sm">Monitor aliran dana dengan visualisasi modern.</p>
+                        </div>
+
+                        <div class="grid lg:grid-cols-3 gap-6 mb-8">
+                            <div class="glass-card p-6 bg-gradient-to-br from-emerald-500/20 to-transparent text-center border-t-4 border-emerald-500">
+                                <p class="text-xs uppercase font-bold opacity-70 tracking-wider">Pemasukan</p>
+                                <h3 id="total-income" class="text-3xl font-black text-emerald-600 mt-2">Rp 0</h3>
+                            </div>
+                            <div class="glass-card p-6 bg-gradient-to-br from-red-500/20 to-transparent text-center border-t-4 border-red-500">
+                                <p class="text-xs uppercase font-bold opacity-70 tracking-wider">Pengeluaran</p>
+                                <h3 id="total-expense" class="text-3xl font-black text-red-600 mt-2">Rp 0</h3>
+                            </div>
+                            <div class="glass-card p-6 bg-gradient-to-br from-blue-500/20 to-transparent text-center border-t-4 border-blue-500">
+                                <p class="text-xs uppercase font-bold opacity-70 tracking-wider">Saldo Saat Ini</p>
+                                <h3 id="current-balance" class="text-3xl font-black text-blue-600 mt-2">Rp 0</h3>
+                            </div>
+                        </div>
+
+                        <div class="grid lg:grid-cols-12 gap-8">
+                            <div class="lg:col-span-4 space-y-6">
+                                <div class="glass-card p-6 backdrop-blur-2xl">
+                                    <div class="type-toggle w-full justify-center mb-6 bg-black/10">
+                                        <div class="type-btn active text-sm" id="type-inc" onclick="setTransType('income')">Pemasukan</div>
+                                        <div class="type-btn text-sm" id="type-exp" onclick="setTransType('expense')">Pengeluaran</div>
+                                    </div>
+                                    <div class="space-y-4">
+                                        <input id="trans-amount" type="number" placeholder="Nominal (Rp)" class="w-full p-4 rounded-xl bg-white/40 border border-white/20 outline-none focus:ring-2 ring-red-500 transition-all text-black">
+                                        <select id="trans-category" class="w-full p-4 rounded-xl bg-white/40 border border-white/20 outline-none text-black">
+                                            <option value="Kebutuhan">Kebutuhan</option>
+                                            <option value="Keinginan">Keinginan</option>
+                                            <option value="Tabungan">Tabungan</option>
+                                            <option value="Custom">Lainnya...</option>
+                                        </select>
+                                        <input id="trans-label" type="text" placeholder="Keterangan (Opsional)" class="w-full p-4 rounded-xl bg-white/40 border border-white/20 outline-none text-black">
+                                        <button onclick="processTransaction()" id="btn-submit-trans" class="w-full btn-primary py-4 text-lg mt-2 shadow-[0_5px_15px_rgba(16,185,129,0.4)]" style="background: linear-gradient(135deg, #10b981, #059669);">Catat Transaksi</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="lg:col-span-8 space-y-6 flex flex-col">
+                                <div class="glass-card p-6 flex-grow">
+                                    <div class="h-64 flex items-center justify-center relative w-full">
+                                        <canvas id="financeChart" class="hidden absolute inset-0 w-full h-full"></canvas>
+                                        <div id="no-chart-data" class="text-center opacity-50 italic">
+                                            <div class="text-4xl mb-2">📊</div>
+                                            Belum ada data untuk dirender
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="glass-card p-4 overflow-hidden h-40">
+                                    <h3 class="text-sm font-bold opacity-70 uppercase tracking-wider mb-2 px-2">Riwayat Transaksi</h3>
+                                    <div id="transaction-list" class="space-y-2 h-full overflow-y-auto pr-2 custom-scrollbar">
+                                        <div class="text-center opacity-40 text-sm mt-8 italic">Riwayat kosong.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PANEL 2: TARGET TABUNGAN -->
+                    <div class="swipe-item relative z-10 flex items-center justify-center p-8">
+                        <div class="w-full max-w-3xl glass-card p-10 backdrop-blur-2xl border-white/30 relative overflow-hidden">
+                            <!-- Target Glow -->
+                            <div class="absolute -top-20 -right-20 w-40 h-40 bg-yellow-400/30 rounded-full blur-3xl pointer-events-none"></div>
+
+                            <div class="text-center mb-10">
+                                <h2 class="text-4xl font-black italic text-yellow-600 drop-shadow-md">Target Tabungan</h2>
+                                <p class="opacity-70 mt-2">Simulasikan dan wujudkan barang impianmu.</p>
+                            </div>
+                            
+                            <div class="grid md:grid-cols-2 gap-8 items-center">
+                                <div class="space-y-5">
+                                    <div>
+                                        <label class="text-xs uppercase font-bold opacity-60 ml-1">Nama Barang</label>
+                                        <input id="target-name" type="text" placeholder="Cth: Laptop Baru" class="w-full mt-1 p-4 rounded-xl bg-white/40 border border-white/20 outline-none text-black">
+                                    </div>
+                                    <div>
+                                        <label class="text-xs uppercase font-bold opacity-60 ml-1">Target Nominal</label>
+                                        <input id="target-total" type="number" placeholder="Rp 0" class="w-full mt-1 p-4 rounded-xl bg-white/40 border border-white/20 outline-none text-black">
+                                    </div>
+                                    <button onclick="setSavingsTarget()" class="w-full btn-primary bg-yellow-600 hover:bg-yellow-700 shadow-[0_5px_15px_rgba(202,138,4,0.4)] py-4">Tetapkan Target Baru</button>
+                                </div>
+                                
+                                <div id="active-target-card" class="glass-card bg-black/10 p-8 border-2 border-yellow-500/40 opacity-50 pointer-events-none transition-all duration-300">
+                                    <h4 id="display-target-name" class="font-bold text-xl text-center mb-4 truncate">Belum ada target</h4>
+                                    
+                                    <div class="relative w-full bg-black/20 rounded-full h-8 overflow-hidden flex border border-white/10 shadow-inner">
+                                        <div id="savings-progress-bar" class="bg-gradient-to-r from-yellow-400 to-orange-500 h-full transition-all duration-1000 ease-out" style="width: 0%"></div>
+                                    </div>
+                                    
+                                    <div class="flex justify-between font-bold text-xs uppercase opacity-70 mt-3">
+                                        <span id="savings-current">Rp 0</span>
+                                        <span id="savings-goal">Rp 0</span>
+                                    </div>
+                                    
+                                    <div class="flex gap-2 pt-6">
+                                        <input id="add-savings" type="number" placeholder="Input tabungan (Rp)" class="w-full p-3 rounded-xl bg-white/40 border border-white/20 outline-none text-black">
+                                        <button onclick="addSavings()" class="btn-primary" style="background: #10b981;">Nabong!</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PANEL 3: SPLIT BILL -->
+                    <div class="swipe-item relative z-10 flex justify-center p-8">
+                        <div class="w-full max-w-4xl glass-card p-10 backdrop-blur-2xl relative overflow-hidden">
+                             <!-- Split Glow -->
+                             <div class="absolute -bottom-20 -left-20 w-40 h-40 bg-orange-500/30 rounded-full blur-3xl pointer-events-none"></div>
+
+                            <div class="text-center mb-10">
+                                <h2 class="text-4xl font-black italic text-orange-500 drop-shadow-md">Split Bill Otomatis</h2>
+                                <p class="opacity-70 mt-2">Makan bersama teman? Hitung patungan seadil mungkin.</p>
+                            </div>
+
+                            <div class="grid md:grid-cols-2 gap-12">
+                                <div class="space-y-5">
+                                    <div class="glass-card p-5 bg-white/10 space-y-4 border border-white/20">
+                                        <div>
+                                            <label class="text-xs font-bold uppercase opacity-60 ml-1">Total Tagihan (Rp)</label>
+                                            <input id="sb-bill" type="number" class="w-full mt-1 p-4 rounded-xl bg-white/40 outline-none text-black text-lg font-bold">
+                                        </div>
+                                        <div class="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label class="text-xs font-bold uppercase opacity-60 ml-1">Jumlah Orang</label>
+                                                <input id="sb-people" type="number" value="1" min="1" class="w-full mt-1 p-4 rounded-xl bg-white/40 outline-none text-black text-center font-bold">
+                                            </div>
+                                            <div>
+                                                <label class="text-xs font-bold uppercase opacity-60 ml-1">Diskon (Rp)</label>
+                                                <input id="sb-discount" type="number" value="0" class="w-full mt-1 p-4 rounded-xl bg-white/40 outline-none text-black">
+                                            </div>
+                                        </div>
+                                        <div class="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label class="text-xs font-bold uppercase opacity-60 ml-1">Pajak (%)</label>
+                                                <input id="sb-tax" type="number" value="0" class="w-full mt-1 p-4 rounded-xl bg-white/40 outline-none text-black text-center">
+                                            </div>
+                                            <div>
+                                                <label class="text-xs font-bold uppercase opacity-60 ml-1">Service (%)</label>
+                                                <input id="sb-service" type="number" value="0" class="w-full mt-1 p-4 rounded-xl bg-white/40 outline-none text-black text-center">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="flex gap-4">
+                                        <button onclick="calculateSplitBill()" class="flex-grow btn-primary py-4 text-lg shadow-[0_5px_15px_rgba(249,115,22,0.4)]" style="background: linear-gradient(135deg, #f97316, #ea580c);">Hitung Patungan</button>
+                                        <button onclick="resetSplitBill()" class="px-6 py-4 rounded-xl bg-black/10 font-bold hover:bg-black/20 transition-all border border-white/20">Reset</button>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center justify-center">
+                                    <div id="sb-result" class="w-full h-full glass-card bg-gradient-to-b from-orange-500/20 to-transparent p-8 flex flex-col justify-center items-center text-center space-y-4 border-2 border-orange-500/50 shadow-[0_0_30px_rgba(249,115,22,0.1)] transition-all transform scale-95 opacity-50">
+                                        <div class="text-5xl mb-2">💸</div>
+                                        <p class="font-bold opacity-60 uppercase tracking-widest text-sm">Per Orang Bayar</p>
+                                        <h3 id="sb-total-person" class="text-5xl font-black text-orange-600 drop-shadow-md">Rp 0</h3>
+                                        <hr class="w-1/2 border-orange-500/30 my-4">
+                                        <div class="text-sm italic opacity-70 space-y-1 bg-white/10 p-3 rounded-lg w-full">
+                                            <p id="sb-summary-total">Total: Rp 0</p>
+                                            <p class="text-xs">(Dibulatkan ke atas)</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="p-8 text-center opacity-60 border-t border-white/10 mt-auto">
+        <p class="font-bold tracking-widest uppercase text-sm">Project Kelompok: THE incredibels </p>
+        <p class="text-xs mt-2">Bicazz &copy; 2026 - Financial Management Solution</p>
+    </footer>
+
+    <script>
+        // ==========================================
+        // NAVIGATION & SECTION MANAGEMENT
+        // ==========================================
+
+        function showMainSection(id) {
+            document.querySelectorAll('main > section').forEach(s => s.classList.add('hidden-section'));
+            document.getElementById(`${id}-section`).classList.remove('hidden-section');
+            window.scrollTo({top: 0, behavior: 'smooth'});
+            
+            // Re-render chart if navigating back to product and Kas is active
+            if(id === 'product' && currentSwipeIndex === 0) {
+                setTimeout(renderChart, 100);
+            }
+        }
+
+
+        // ==========================================
+        // SWIPE CARD LOGIC
+        // ==========================================
+
+        let currentSwipeIndex = 0;
+
+        function swipeTo(index) {
+            currentSwipeIndex = index;
+            
+            // UI Button Updates
+            document.querySelectorAll('.futuristic-tab').forEach((b, i) => {
+                b.classList.toggle('active', i === index);
+            });
+
+            // Move Track
+            const track = document.getElementById('product-track');
+            track.style.transform = `translateX(-${index * 33.333}%)`;
+
+            // If index is 0 (Kas), ensure chart is sized correctly after transition
+            if(index === 0) {
+                setTimeout(renderChart, 500); 
+            }
+        }
+
+
+        // ==========================================
+        // KAS (CASH FLOW) LOGIC
+        // ==========================================
+
+        let currentBalance = 0;
+        let totalIncome = 0;
+        let totalExpense = 0;
+        let transactions = [];
+        let transType = 'income'; 
+        let chart;
+
+        function setTransType(type) {
+            transType = type;
+            document.getElementById('type-inc').classList.toggle('active', type === 'income');
+            document.getElementById('type-exp').classList.toggle('active', type === 'expense');
+            
+            const btn = document.getElementById('btn-submit-trans');
+            if(type === 'income') {
+                btn.innerText = 'Catat Pemasukan';
+                btn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+                btn.style.boxShadow = '0 5px 15px rgba(16,185,129,0.4)';
+            } else {
+                btn.innerText = 'Catat Pengeluaran';
+                btn.style.background = 'linear-gradient(135deg, #f87171, #ef4444)';
+                btn.style.boxShadow = '0 5px 15px rgba(239,68,68,0.4)';
+            }
+        }
+
+        function processTransaction() {
+            const amount = parseFloat(document.getElementById('trans-amount').value);
+            const label = document.getElementById('trans-label').value || (transType === 'income' ? 'Pemasukan' : 'Pengeluaran');
+            const cat = document.getElementById('trans-category').value;
+
+            if (isNaN(amount) || amount <= 0) return;
+
+            if (transType === 'income') {
+                totalIncome += amount;
+                currentBalance += amount;
+            } else {
+                totalExpense += amount;
+                currentBalance -= amount;
+            }
+
+            transactions.unshift({
+                id: Date.now(),
+                type: transType,
+                amount: amount,
+                label: label,
+                category: cat,
+                date: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            });
+
+            updateKasUI();
+            renderChart();
+            
+            document.getElementById('trans-amount').value = '';
+            document.getElementById('trans-label').value = '';
+        }
+
+        function updateKasUI() {
+            document.getElementById('total-income').innerText = `Rp ${totalIncome.toLocaleString()}`;
+            document.getElementById('total-expense').innerText = `Rp ${totalExpense.toLocaleString()}`;
+            document.getElementById('current-balance').innerText = `Rp ${currentBalance.toLocaleString()}`;
+            
+            const list = document.getElementById('transaction-list');
+            if(transactions.length === 0) return;
+
+            list.innerHTML = transactions.map(t => `
+                <div class="flex justify-between items-center bg-black/10 hover:bg-black/20 transition p-3 rounded-xl border-l-4 ${t.type === 'income' ? 'border-emerald-500' : 'border-red-500'}">
+                    <div class="overflow-hidden">
+                        <p class="font-bold text-sm truncate">${t.label}</p>
+                        <p class="text-xs opacity-60">${t.date} • ${t.category}</p>
+                    </div>
+                    <p class="font-black text-sm whitespace-nowrap ml-2 ${t.type === 'income' ? 'text-emerald-500' : 'text-red-500'}">
+                        ${t.type === 'income' ? '+' : '-'}Rp ${t.amount.toLocaleString()}
+                    </p>
+                </div>
+            `).join('');
+        }
+
+        function renderChart() {
+            const canvas = document.getElementById('financeChart');
+            const noData = document.getElementById('no-chart-data');
+
+            // Prevent rendering if not on Kas tab to avoid zero-width canvas issues
+            if (currentSwipeIndex !== 0) return;
+
+            if (transactions.length === 0) {
+                canvas.classList.add('hidden');
+                noData.classList.remove('hidden');
+                return;
+            }
+
+            canvas.classList.remove('hidden');
+            noData.classList.add('hidden');
+
+            const ctx = canvas.getContext('2d');
+            const labels = [...transactions].reverse().map(t => t.date);
+            const dataPoints = [];
+            let tempBal = 0;
+            [...transactions].reverse().forEach(t => {
+                tempBal += (t.type === 'income' ? t.amount : -t.amount);
+                dataPoints.push(tempBal);
+            });
+
+            if (chart) chart.destroy();
+
+            // Gradient fill for chart
+            let gradient = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, 'rgba(239, 68, 68, 0.5)');
+            gradient.addColorStop(1, 'rgba(239, 68, 68, 0.0)');
+
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Saldo',
+                        data: dataPoints,
+                        borderColor: '#ef4444',
+                        backgroundColor: gradient,
+                        borderWidth: 3,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#ef4444',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { 
+                        x: { display: false }, 
+                        y: { 
+                            beginAtZero: false,
+                            grid: { color: 'rgba(255,255,255,0.1)' }
+                        } 
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+
+        // ==========================================
+        // TARGET TABUNGAN LOGIC
+        // ==========================================
+
+        let goalAmount = 0;
+        let currentSaved = 0;
+
+        function setSavingsTarget() {
+            const name = document.getElementById('target-name').value;
+            const total = parseFloat(document.getElementById('target-total').value);
+
+            if (!name || isNaN(total)) return;
+
+            goalAmount = total;
+            currentSaved = 0;
+            
+            document.getElementById('display-target-name').innerText = name;
+            document.getElementById('savings-goal').innerText = `Rp ${total.toLocaleString()}`;
+            document.getElementById('savings-current').innerText = `Rp 0`;
+            document.getElementById('savings-progress-bar').style.width = '0%';
+            
+            const card = document.getElementById('active-target-card');
+            card.classList.remove('opacity-50', 'pointer-events-none');
+        }
+
+        function addSavings() {
+            const amt = parseFloat(document.getElementById('add-savings').value);
+            if (isNaN(amt) || amt <= 0 || goalAmount === 0) return;
+
+            currentSaved += amt;
+            if (currentSaved > goalAmount) currentSaved = goalAmount;
+
+            const progress = (currentSaved / goalAmount) * 100;
+            document.getElementById('savings-progress-bar').style.width = `${progress}%`;
+            document.getElementById('savings-current').innerText = `Rp ${currentSaved.toLocaleString()}`;
+
+            if(currentSaved >= goalAmount) {
+                setTimeout(() => alert("🎉 Target tabunganmu telah tercapai! Saatnya mewujudkan impianmu!"), 300);
+            }
+            document.getElementById('add-savings').value = '';
+        }
+
+
+        // ==========================================
+        // SPLIT BILL LOGIC
+        // ==========================================
+
+        function calculateSplitBill() {
+            const bill = parseFloat(document.getElementById('sb-bill').value);
+            const people = parseInt(document.getElementById('sb-people').value);
+            const tax = parseFloat(document.getElementById('sb-tax').value) || 0;
+            const service = parseFloat(document.getElementById('sb-service').value) || 0;
+            const discount = parseFloat(document.getElementById('sb-discount').value) || 0;
+
+            if (isNaN(bill) || isNaN(people) || people <= 0) return;
+
+            const afterDiscount = bill - discount;
+            const finalTotal = afterDiscount + (afterDiscount * (tax / 100)) + (afterDiscount * (service / 100));
+            const perPerson = Math.ceil(finalTotal / people);
+
+            const resultCard = document.getElementById('sb-result');
+            resultCard.classList.remove('scale-95', 'opacity-50');
+            resultCard.classList.add('scale-100', 'opacity-100');
+
+            document.getElementById('sb-total-person').innerText = `Rp ${perPerson.toLocaleString()}`;
+            document.getElementById('sb-summary-total').innerText = `Total Bill: Rp ${finalTotal.toLocaleString()}`;
+        }
+
+        function resetSplitBill() {
+            document.querySelectorAll('#sb-bill, #sb-discount, #sb-tax, #sb-service').forEach(i => i.value = '');
+            document.getElementById('sb-people').value = 1;
+            
+            const resultCard = document.getElementById('sb-result');
+            resultCard.classList.add('scale-95', 'opacity-50');
+            resultCard.classList.remove('scale-100', 'opacity-100');
+            
+            document.getElementById('sb-total-person').innerText = `Rp 0`;
+            document.getElementById('sb-summary-total').innerText = `Total: Rp 0`;
+        }
+
+
+        // ==========================================
+        // THEME MANAGEMENT
+        // ==========================================
+
+        function toggleTheme() {
+            const body = document.getElementById('app-body');
+            const isDark = body.classList.contains('theme-dark');
+            body.classList.toggle('theme-light', isDark);
+            body.classList.toggle('theme-dark', !isDark);
+            
+            document.getElementById('theme-icon').innerHTML = isDark ? 
+                '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />' : 
+                '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />';
+                
+            // Update chart colors if chart exists
+            if(chart && currentSwipeIndex === 0) {
+                renderChart();
+            }
+        }
+    </script>
+</body>
+</html>
